@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>인과재해관리청</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+  --navy:#17356b;--blue:#256ef4;--blue-d:#0b50d0;
+  --ink:#1e2124;--ink2:#4c5560;--line:#cdd1d5;--line2:#e6e8ea;
+  --soft:#f4f6fa;--bg:#ffffff;
+  --danger:#c93c30;--warn:#b86e00;--ok:#1a7a4b;
+  --sans:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 60px);font-size:16px}
+html.large{font-size:18px}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:1rem;line-height:1.65;word-break:keep-all;overflow-wrap:break-word}
+a{color:inherit}
+button{font-family:inherit}
+:focus-visible{outline:3px solid #f2a900;outline-offset:2px}
+#view:focus{outline:none}
+.skip{position:absolute;left:-999px;top:0;background:#000;color:#fff;padding:8px 14px;z-index:20}
+.skip:focus{left:0}
+.wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+.vh{position:absolute;left:-999px}
+
+.govbar{background:var(--soft);border-bottom:1px solid var(--line2);font-size:.8125rem;color:var(--ink2)}
+.govbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:38px}
+.govbar .l{display:flex;align-items:center;gap:8px}
+.govbar .l svg{width:16px;height:16px;flex:none}
+.govbar button{border:1px solid var(--line);background:#fff;color:var(--ink);font-size:.75rem;padding:3px 10px;border-radius:2px;cursor:pointer}
+.govbar button[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+.site .wrap{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:84px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px;text-decoration:none}
+.brand svg{width:54px;height:54px;flex:none}
+.brand b{display:block;font-size:1.75rem;font-weight:900;color:var(--navy);line-height:1.15;letter-spacing:-.01em}
+.brand small{display:block;font-size:.8125rem;color:var(--ink2);margin-top:2px}
+.util{display:flex;gap:16px;font-size:.875rem;color:var(--ink2)}
+.util a{text-decoration:none}
+.util a:hover{text-decoration:underline}
+
+.gnb{border-top:1px solid var(--line);border-bottom:2px solid var(--navy);background:#fff;position:sticky;top:0;z-index:10}
+.gnb ul{display:flex;list-style:none;margin:0 auto;padding:0 20px;max-width:1200px;overflow-x:auto;scrollbar-width:none}
+.gnb a{display:block;padding:14px 24px;font-weight:700;font-size:1.0625rem;text-decoration:none;white-space:nowrap;border-bottom:4px solid transparent;margin-bottom:-2px}
+.gnb a:hover,.gnb a:focus-visible{color:var(--blue-d);border-bottom-color:var(--blue)}
+.gnb a[aria-current="page"]{color:var(--blue-d);border-bottom-color:var(--navy)}
+
+/* 홈 히어로 */
+.hero{padding:44px 0 36px;border-bottom:1px solid var(--line2)}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:40px;align-items:center}
+.hero h1{font-size:clamp(1.75rem,4vw,2.5rem);font-weight:900;line-height:1.3;margin:0 0 12px;color:var(--navy);letter-spacing:-.02em}
+.hero p{margin:0 0 22px;color:var(--ink2);max-width:34rem}
+.search{display:flex;border:2px solid var(--navy);max-width:34rem;background:#fff}
+.search input{flex:1;min-width:0;border:0;padding:14px 16px;font:inherit;font-size:1rem;background:#fff;color:var(--ink)}
+.search input:focus-visible{outline-offset:-4px}
+.search button{border:0;background:var(--navy);color:#fff;font-weight:700;font-size:1rem;padding:0 28px;cursor:pointer}
+.search button:hover{background:var(--blue-d)}
+.tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;font-size:.875rem;color:var(--ink2);align-items:center}
+.tags button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:3px 14px;font-size:.875rem;cursor:pointer;color:var(--ink)}
+.tags button:hover{border-color:var(--blue);color:var(--blue-d)}
+
+.alert{border:1px solid var(--line);border-top:4px solid var(--navy);padding:18px 20px 20px}
+.alert h2{margin:0 0 4px;font-size:1.0625rem}
+.alert .now{font-size:.9375rem;color:var(--ink2);margin:0 0 14px}
+.alert .now b{font-size:1.25rem}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;list-style:none;margin:0;padding:0}
+.steps li{text-align:center;font-size:.8125rem;padding:8px 2px;background:var(--soft);color:var(--ink2);border-top:6px solid var(--line)}
+.steps li.on{background:#fff;color:var(--ink);font-weight:700;outline:2px solid var(--ink);outline-offset:-2px}
+.steps li:nth-child(1){border-top-color:#2f8f5b}
+.steps li:nth-child(2){border-top-color:#e0a100}
+.steps li:nth-child(3){border-top-color:#e8700a}
+.steps li:nth-child(4){border-top-color:#c93c30}
+.alert .up{font-size:.75rem;color:var(--ink2);margin:12px 0 0}
+
+.quick{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-top:0;margin-bottom:8px}
+.quick a{display:flex;align-items:center;gap:14px;padding:20px 22px;text-decoration:none;border-left:1px solid var(--line)}
+.quick a:first-child{border-left:0}
+.quick a:hover{background:var(--soft)}
+.quick svg{width:38px;height:38px;flex:none;stroke:var(--navy);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.quick b{display:block;font-size:1.0625rem;line-height:1.3}
+.quick span{font-size:.8125rem;color:var(--ink2)}
+
+/* 공통 섹션 */
+section.block{padding:52px 0 8px}
+.sh{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px;padding-bottom:12px;border-bottom:2px solid var(--ink)}
+.sh h2{margin:0;font-size:1.75rem;font-weight:900;color:var(--ink);letter-spacing:-.01em}
+.sh p{margin:0;color:var(--ink2);font-size:.9375rem}
+.sh a.more{font-size:.9375rem;font-weight:700;color:var(--blue-d);text-decoration:none}
+.sh a.more:hover{text-decoration:underline}
+
+/* 서브 페이지 머리 */
+.crumb{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:.875rem;color:var(--ink2);padding:18px 0 0}
+.crumb a{text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.crumb i{font-style:normal;color:var(--line)}
+.ptitle{padding:22px 0 26px;border-bottom:1px solid var(--line2)}
+.ptitle h1{margin:0 0 6px;font-size:clamp(1.75rem,4vw,2.375rem);font-weight:900;color:var(--navy);letter-spacing:-.02em;line-height:1.3}
+.ptitle p{margin:0;color:var(--ink2)}
+.sub{padding:34px 0 8px}
+
+.goal{display:flex;gap:18px;align-items:flex-start;border:1px solid var(--blue);background:#f1f6ff;padding:20px 24px;margin-bottom:26px}
+.goal svg{width:34px;height:34px;flex:none;stroke:var(--blue-d);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;margin-top:2px}
+.goal b{display:block;font-size:1.1875rem;color:var(--navy);margin-bottom:2px}
+.goal p{margin:0}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:2px solid var(--ink);margin:0 0 30px}
+.facts div{padding:16px 18px;border-bottom:1px solid var(--line);border-right:1px solid var(--line)}
+.facts div:nth-child(3n){border-right:0}
+.facts dt{font-weight:700;color:var(--navy);margin-bottom:4px}
+.facts dd{margin:0;font-size:.9375rem;color:var(--ink2)}
+.teams{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+a.team{display:block;text-decoration:none;border:1px solid var(--line);border-top:6px solid var(--tc);padding:18px 20px 20px;background:#fff}
+a.team:hover{box-shadow:0 6px 16px rgba(23,53,107,.14)}
+.team h3{margin:0;font-size:1.25rem;display:flex;align-items:baseline;gap:8px}
+.team h3 small{font-size:.9375rem;color:var(--ink2);font-weight:400}
+.team .cnt{display:inline-block;margin:8px 0 6px;font-size:.8125rem;font-weight:700;color:#fff;background:var(--tc);padding:1px 10px;border-radius:2px}
+.team p{margin:0;font-size:.9375rem;color:var(--ink2)}
+.team .go{display:block;margin-top:10px;font-size:.8125rem;font-weight:700;color:var(--blue-d)}
+
+/* 요원 조회 */
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:18px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{border:1px solid var(--line);background:#fff;padding:8px 16px;font-size:.9375rem;font-weight:500;cursor:pointer;border-radius:2px}
+.chips button:hover{border-color:var(--navy)}
+.chips button[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:700}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tools input{border:1px solid var(--line);padding:8px 12px;font:inherit;font-size:.9375rem;min-width:220px}
+.tools .flipall{border:1px solid var(--navy);background:#fff;color:var(--navy);font-weight:700;padding:8px 16px;font-size:.9375rem;cursor:pointer;border-radius:2px}
+.tools .flipall:hover{background:var(--navy);color:#fff}
+.hint{display:flex;gap:8px;align-items:center;font-size:.875rem;color:var(--ink2);margin:0 0 22px}
+.hint svg{width:18px;height:18px;stroke:var(--blue-d);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:28px 24px;justify-items:center}
+.nores{padding:40px 0;text-align:center;color:var(--ink2)}
+
+/* 신분증 */
+.idcard{width:100%;max-width:370px;perspective:1200px;cursor:pointer;border-radius:12px;-webkit-tap-highlight-color:transparent}
+.inner{display:grid;transform-style:preserve-3d;transition:transform .75s cubic-bezier(.35,.1,.2,1)}
+.idcard.flipped .inner{transform:rotateY(180deg)}
+.face{grid-area:1/1;pointer-events:none;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-height:320px;box-shadow:0 6px 18px rgba(23,53,107,.14),0 1px 2px rgba(0,0,0,.08)}
+.face.back{transform:rotateY(180deg)}
+.idcard:not(.flipped) .face.front,.idcard.flipped .face.back{pointer-events:auto}
+.band{background:var(--tc);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;font-size:.8125rem;font-weight:700;letter-spacing:.01em}
+.band span:last-child{font-weight:500;opacity:.92}
+.fbody{display:grid;grid-template-columns:92px 1fr;gap:14px;padding:16px 14px 8px;flex:1}
+.photo{width:92px;aspect-ratio:3.5/4.5;background:var(--soft);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.photo svg{width:62%;fill:#b8c0cc}
+.photo img{width:100%;height:100%;object-fit:cover}
+.nm{font-size:1.5rem;font-weight:900;line-height:1.2;margin:0;letter-spacing:.02em}
+.nm small{display:block;font-size:.8125rem;font-weight:400;color:var(--ink2);letter-spacing:.02em;margin-top:2px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:10px 0 0;font-size:.8125rem}
+.kv dt{color:var(--ink2)}
+.kv dd{margin:0;font-weight:500}
+.kv dd.age{font-weight:900;color:var(--navy)}
+.ffoot{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding:6px 14px 14px;font-size:.75rem;color:var(--ink2)}
+.ffoot .tap{display:flex}
+.ffoot a.more,.bmore{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:.875rem;font-weight:700;color:#fff;background:var(--blue-d);padding:7px 12px;border-radius:4px;text-decoration:none;min-height:38px}
+.ffoot a.more:hover,.bmore:hover{background:var(--navy);text-decoration:underline}
+.ffoot a.more:focus-visible,.bmore:focus-visible{outline:3px solid #f2a900;outline-offset:3px}
+.seal{width:54px;height:54px;flex:none;color:var(--danger);transform:rotate(-10deg);opacity:.9}
+.tap{display:inline-flex;gap:4px;align-items:center;color:var(--blue-d);font-weight:700;font-size:.75rem}
+.tap svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+.bbody{padding:14px 14px 6px;flex:1;display:flex;flex-direction:column;gap:11px}
+.tool b{display:block;font-size:1rem;line-height:1.3}
+.tool p{margin:2px 0 0;font-size:.8125rem;color:var(--ink2);line-height:1.5}
+.lab{display:flex;justify-content:space-between;font-size:.75rem;color:var(--ink2);margin-bottom:3px}
+.lab b{color:var(--ink);font-weight:700}
+.gauge{position:relative;height:12px;background:var(--soft);border:1px solid var(--line)}
+.gauge i{position:absolute;inset:0 auto 0 0;display:block}
+.gauge u{position:absolute;top:-3px;bottom:-3px;left:70%;width:2px;background:var(--ink);text-decoration:none}
+.lv-ok i{background:#2f8f5b}.lv-warn i{background:#e0a100}.lv-danger i{background:var(--danger)}
+.lv-ok .st{color:var(--ok)}.lv-warn .st{color:var(--warn)}.lv-danger .st{color:var(--danger)}
+.pips{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.pip{width:22px;height:22px;border:2px solid var(--line);border-radius:50%;display:grid;place-items:center;font-size:.6875rem;font-weight:700;color:var(--line)}
+.pip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.pip.dead{border-style:dashed;border-color:var(--danger);color:var(--danger)}
+.pipnote{font-size:.75rem;color:var(--ink2);margin-left:6px}
+.pipnote.crit{color:var(--danger);font-weight:700}
+.bmeta{font-size:.75rem;color:var(--ink2);border-top:1px dashed var(--line);padding-top:8px;line-height:1.5}
+.bmeta b{color:var(--ink);font-weight:500}
+.barcode{height:22px;margin:4px 14px 12px;background:repeating-linear-gradient(90deg,#222 0 2px,transparent 2px 4px,#222 4px 5px,transparent 5px 9px,#222 9px 12px,transparent 12px 14px);opacity:.82}
+
+/* 요원 상세 */
+.dhead{border-top:8px solid var(--tc);background:var(--soft);border-bottom:1px solid var(--line)}
+.dhead .wrap{padding-top:6px;padding-bottom:26px}
+.dhead .crumb{padding-top:14px}
+.dtitle{display:flex;gap:22px;align-items:center;margin-top:18px;flex-wrap:wrap}
+.dtitle .photo{width:112px;flex:none}
+.dtitle h1{margin:0;font-size:clamp(1.875rem,5vw,2.625rem);font-weight:900;line-height:1.2;letter-spacing:.02em}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.badge{display:inline-block;font-size:.8125rem;font-weight:700;padding:2px 12px;border-radius:2px;background:#fff;border:1px solid var(--line);color:var(--ink)}
+.badge.t{background:var(--tc);border-color:var(--tc);color:#fff}
+.badge.age{background:var(--navy);border-color:var(--navy);color:#fff}
+.dgrid{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:36px;align-items:start}
+.side{border:1px solid var(--line);border-top:4px solid var(--tc);padding:18px 18px 20px;position:sticky;top:64px;display:flex;flex-direction:column;gap:14px}
+.side h2{margin:0;font-size:1.0625rem}
+.dh3{margin:30px 0 10px;font-size:1.375rem;font-weight:900;padding-bottom:8px;border-bottom:2px solid var(--ink)}
+.dh3:first-child{margin-top:0}
+.ptable{min-width:0;border-top:2px solid var(--ink)}
+.ptable th{width:7rem;background:var(--soft)}
+.plist{margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.plist li{padding:11px 4px 11px 18px;border-bottom:1px solid var(--line);position:relative;font-size:.9375rem}
+.plist li::before{content:"";position:absolute;left:4px;top:1.2em;width:6px;height:6px;background:var(--tc)}
+.quotes{display:grid;gap:10px;margin:12px 0 0}
+.quote{margin:0;padding:12px 16px;border-left:4px solid var(--tc);background:var(--soft);font-size:.9375rem}
+.lk{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lk div{border:1px solid var(--line);padding:14px 16px}
+.lk b{display:block;font-size:.8125rem;margin-bottom:4px}
+.lk .y b{color:var(--ok)}.lk .n b{color:var(--danger)}
+.lk p{margin:0;font-size:.9375rem}
+.pager{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:34px 0 8px}
+.pager a{display:block;border:1px solid var(--line);padding:14px 18px;text-decoration:none}
+.pager a:hover{background:var(--soft)}
+.pager small{display:block;color:var(--ink2);font-size:.8125rem}
+.pager b{font-size:1.0625rem}
+.pager a:last-child{text-align:right}
+
+/* 안내 카드·표 */
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:26px}
+.info{border:1px solid var(--line);padding:20px 22px;background:#fff}
+.info h3{margin:0 0 8px;font-size:1.1875rem;color:var(--navy)}
+.info p{margin:0;font-size:.9375rem;color:var(--ink2)}
+.tbl{overflow-x:auto;margin-bottom:8px}
+table{width:100%;border-collapse:collapse;border-top:2px solid var(--ink);min-width:520px}
+th,td{padding:12px 16px;border-bottom:1px solid var(--line);text-align:left;font-size:.9375rem;vertical-align:top}
+th{background:var(--soft);font-weight:700;white-space:nowrap}
+td.hl{color:var(--danger);font-weight:700}
+td a{color:var(--blue-d);font-weight:700;text-decoration:none}
+td a:hover{text-decoration:underline}
+.cap{font-size:.9375rem;color:var(--ink2);margin:0 0 10px}
+.h3{margin:30px 0 6px;font-size:1.25rem;font-weight:900}
+
+/* 공지·FAQ */
+.board{list-style:none;margin:0;padding:0;border-top:2px solid var(--ink)}
+.board li{border-bottom:1px solid var(--line)}
+.board a{display:flex;justify-content:space-between;gap:16px;padding:14px 4px;text-decoration:none}
+.board a:hover{background:var(--soft)}
+.board a:hover .tt{color:var(--blue-d);text-decoration:underline}
+.board time{flex:none;color:var(--ink2);font-size:.875rem}
+.board .new{display:inline-block;background:var(--danger);color:#fff;font-size:.6875rem;font-weight:700;padding:0 6px;margin-right:6px;border-radius:2px;vertical-align:1px}
+.board .cat{display:inline-block;font-size:.75rem;color:var(--ink2);border:1px solid var(--line);padding:0 7px;margin-right:6px;border-radius:2px}
+.nview{max-width:820px}
+.nview .meta{display:flex;gap:14px;flex-wrap:wrap;color:var(--ink2);font-size:.875rem;padding:12px 0;border-bottom:1px solid var(--line);margin-bottom:22px}
+.nview .body p{margin:0 0 14px}
+.nview .body ul{margin:0 0 14px;padding-left:1.2rem}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px}
+.btn{display:inline-block;border:1px solid var(--navy);background:#fff;color:var(--navy);font-weight:700;padding:10px 20px;text-decoration:none;font-size:.9375rem;border-radius:2px}
+.btn:hover{background:var(--navy);color:#fff}
+.faq{border-top:2px solid var(--ink)}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{cursor:pointer;padding:14px 4px;font-weight:700;list-style:none;display:flex;gap:10px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:"Q";color:var(--blue-d);font-weight:900}
+.faq summary::after{content:"+";margin-left:auto;font-weight:400;color:var(--ink2)}
+.faq details[open] summary::after{content:"−"}
+.faq details p{margin:0;padding:2px 4px 16px 26px;color:var(--ink2);font-size:.9375rem}
+
+footer{margin-top:60px;background:var(--soft);border-top:1px solid var(--line)}
+.flinks{display:flex;gap:22px;flex-wrap:wrap;padding:16px 0;border-bottom:1px solid var(--line);font-size:.875rem;font-weight:700}
+.flinks a{text-decoration:none}
+.fmain{display:flex;gap:28px;justify-content:space-between;flex-wrap:wrap;padding:22px 0 34px;font-size:.8125rem;color:var(--ink2)}
+.fmain b{color:var(--ink);font-size:1rem;display:block;margin-bottom:4px}
+.fmain p{margin:0}
+
+@media (max-width:960px){
+  .hero .wrap{grid-template-columns:1fr;gap:28px}
+  .quick{grid-template-columns:1fr 1fr}
+  .quick a:nth-child(3){border-left:0}
+  .quick a:nth-child(n+3){border-top:1px solid var(--line)}
+  .trio,.teams{grid-template-columns:1fr}
+  .facts{grid-template-columns:1fr 1fr}
+  .facts div:nth-child(3n){border-right:1px solid var(--line)}
+  .facts div:nth-child(2n){border-right:0}
+  .dgrid{grid-template-columns:1fr}
+  .side{position:static}
+}
+@media (max-width:640px){
+  .wrap{padding:0 14px}
+  .util{display:none}
+  .gnb a{padding:12px 16px;font-size:1rem}
+  .quick{grid-template-columns:1fr}
+  .quick a{border-left:0;border-top:1px solid var(--line)}
+  .quick a:first-child{border-top:0}
+  .facts{grid-template-columns:1fr}
+  .facts div{border-right:0!important}
+  .cards{grid-template-columns:1fr}
+  .tools input{min-width:0;flex:1}
+  .tools{width:100%}
+  .goal{padding:16px}
+  .sh h2{font-size:1.5rem}
+  .lk,.pager{grid-template-columns:1fr}
+  .board a{flex-direction:column;gap:2px}
+  .dtitle .photo{width:88px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .inner{transition:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#view">본문 바로가기</a>
+
+<div class="govbar">
+  <div class="wrap">
+    <div class="l">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="#17356b" stroke-width="1.4"/><circle cx="8" cy="8" r="2.2" fill="#17356b"/></svg>
+      <span>이 누리집은 가상의 설정으로 만든 비공식 자료집입니다.</span>
+    </div>
+    <button type="button" id="fs" aria-pressed="false">글자 크게</button>
+  </div>
+</div>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="#/" aria-label="인과재해관리청 처음으로">
+      <svg viewBox="0 0 56 56" aria-hidden="true">
+        <circle cx="28" cy="28" r="26" fill="#17356b"/>
+        <circle cx="28" cy="28" r="21" fill="none" stroke="#fff" stroke-width="1.4"/>
+        <circle cx="22" cy="28" r="9" fill="none" stroke="#fff" stroke-width="2.4"/>
+        <circle cx="34" cy="28" r="9" fill="none" stroke="#fff" stroke-width="2.4"/>
+        <circle cx="28" cy="28" r="2.4" fill="#f2a900"/>
+      </svg>
+      <span><b>인과재해관리청</b><small>인재청 · Causality Disaster Management Agency</small></span>
+    </a>
+    <div class="util"><a href="#/notice">공지사항</a><a href="#/faq">자주 묻는 질문</a></div>
+  </div>
+</header>
+<nav class="gnb" aria-label="주요 메뉴">
+  <ul>
+    <li><a href="#/about" data-nav="about">청 소개</a></li>
+    <li><a href="#/agents" data-nav="agents">요원 조회</a></li>
+    <li><a href="#/system" data-nav="system">주구와 업</a></li>
+    <li><a href="#/notice" data-nav="notice">공지사항</a></li>
+    <li><a href="#/faq" data-nav="faq">자주 묻는 질문</a></li>
+  </ul>
+</nav>
+
+<main id="view" tabindex="-1"></main>
+
+<footer>
+  <div class="wrap">
+    <div class="flinks"><a href="#/about">청 소개</a><a href="#/agents">요원 조회</a><a href="#/system">주구와 업</a><a href="#/notice">공지사항</a><a href="#/faq">자주 묻는 질문</a></div>
+    <div class="fmain">
+      <div><b>인과재해관리청</b><p>(00000) 가상시 인과구 수습로 100 (예시 주소)</p><p>대표전화 000-0000-0000 (예시)</p></div>
+      <div><p>본 누리집은 창작 설정을 정리한 비공식 자료집입니다.</p><p>© 2026 Causality Disaster Management Agency. All rights reserved.</p></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* =========================================================
+   여기만 수정하면 됩니다.
+   - karma: 업 침식도 0~100 (70 이상이면 휴식 필요 표시)  ※ 임시 수치
+   - rebirth: 윤회 횟수 0~4 (5회가 되면 완전 사망)
+   - photo: 이미지 주소를 넣으면 사진이 표시됩니다.
+   - 공지는 NOTICES, 팀 설명은 TEAMS, FAQ는 FAQS 에서 수정하세요.
+   ========================================================= */
+const ALERT = { level: 1, updated: "2026.10.13 09:00 기준" };   // 0 관심 · 1 주의 · 2 경계 · 3 심각
+const LEVELS = ["관심", "주의", "경계", "심각"];
+
+const TEAMS = {
+  "창해": { hanja: "滄海", color: "#1b5fb0", desc: "넓고 깊은 바다처럼 흔들림 없이 인과를 가라앉히는 팀." },
+  "낙성": { hanja: "落星", color: "#9a6b00", desc: "떨어지는 별처럼 재해의 중심을 정확히 겨냥하는 팀." },
+  "백야": { hanja: "白夜", color: "#6a3f9e", desc: "어둠이 걷히지 않는 밤에도 끝까지 현장을 밝히는 팀." }
+};
+
+const AGENTS = [
+  { id: "do-yurim", no: "2026-창-001", name: "도유림", team: "창해", rank: "팀장",
+    age: 31, height: 184, hair: "반깐 흑발", eyes: "짙은 녹안", look: "뺨에 흉터",
+    outfit: "검은 제복 정장, 코트, 금색 체인 장식, 구두",
+    tool: { name: "회중시계", desc: "원하는 대상을 가속하거나 감속시킨다." },
+    mbti: "INTJ", personality: "강단 · 침착 · FM · 쑥맥",
+    speech: "정중한 존대를 쓴다. 호칭은 '당신', '{user}씨'.",
+    quotes: ["제가 처리했으니 괜찮습니다. 안심하세요.", "아… 그, 그게… 날씨가 좋습니다…."],
+    past: ["카르마로 인해 어린 여동생을 잃은 일을 계기로 입사했다. 그래서 어린아이들에게는 마음이 무르다.", "피해자가 생기는 것을 최대한 막기 위해 늘 토벌의 선두에 선다."],
+    traits: ["평소에는 정중하지만 노아에게만 입이 꽤 험하다.", "한번 맡은 팀원은 티 내지 않아도 매우 아낀다.", "간식타임을 자주 가진다.", "연애 경험이 전무하다. 좋아하는 사람이나 이상형 앞에서는 어리바리해진다."],
+    likes: "단 디저트, 평화, 아이들", dislikes: "카르마, 변수",
+    karma: 30, rebirth: 0,
+    note: "창해팀을 이끄는 팀장. 정중하고 침착하게 현장을 수습한다.", photo: "" },
+  { id: "noah", no: "2026-창-002", name: "노아 르블랑", team: "창해", rank: "요원",
+    gender: "남성", age: 24, height: 192, hair: "부스스한 백금발", eyes: "연한 금안", look: "뺨에 밴드",
+    outfit: "검정 티셔츠, 흰 와이셔츠, 청색 야구 점퍼, 검정 모자, 손에 감은 붕대",
+    tool: { name: "큰 낫", desc: "노아가 휘두르는 대형 낫형 주구." },
+    mbti: "ENFP", personality: "유쾌 · 낙관 · 즐거움 · 장난",
+    speech: "어딘가 어색한 반존대를 쓰고, 영어를 직역한 듯한 말투다. 호칭은 '{user}'.",
+    quotes: ["그거 멋있어요! 나도! 나도 할래요!", "오… 미안해요… 진짜 몰랐어요! 안 혼낼거죠?"],
+    past: ["캐나다 출신. 돈 많은 부모님의 사랑을 가득 받고 자랐다.", "인생이 심심해서 악명이 자자한 한국으로 유학을 왔다."],
+    traits: ["한국어를 열심히 배우는 중이다. 언어는 기세라고 생각한다.", "불리할 때는 한국어를 못하는 척 영어로 말한다.", "모두에게 사회성이 좋다. 아이스하키 얘기를 할 때만 예외.", "쉬는 날에는 아이스하키 동호회에 나간다.", "팀장을 놀리는 것이 삶의 낙이다."],
+    likes: "팀장님과 간식타임, 놀러 다니기, 게임", dislikes: "지루한 것",
+    karma: 20, rebirth: 0,
+    note: "유쾌한 창해팀 요원. 팀장을 놀리는 데 열심이다.", photo: "" },
+
+  { id: "lee-minwoo", no: "2026-낙-001", name: "이민우", team: "낙성", rank: "팀장",
+    gender: "남성", age: 22, height: 181, hair: "짧은 적발", eyes: "흑안", look: "항상 가스마스크 착용",
+    outfit: "검은 가스마스크, 하얀 후드와 테크웨어, 후드 위 고양이 귀 헤드셋, 워커",
+    tool: { name: "노트북", desc: "카르마 정보를 분석하고 브리핑하는 데 쓴다." },
+    mbti: "ISFJ", personality: "무뚝뚝 · 귀찮음 · 멍함",
+    speech: "어딘가 맹한 반말을 쓴다. 호칭은 '너', '{user}'.",
+    quotes: ["어… 나만 할 수 있는거야, 난 팀장이니까.", "밤샜으니까 이제 잘거야… 건들지마."],
+    past: ["가족이 없고, 어릴 때부터 인재청에서 일했다.", "윤회를 2번 겪었고, 그 후유증으로 항상 가스마스크를 쓴다.", "윤회 후 전투에서 서포트 담당으로 바뀌었다."],
+    traits: ["낙성팀을 자신의 집이라고 생각한다.", "정보 담당이며 카르마 정보 브리핑이 주 업무다.", "심심하면 몰래 왁뿌볼(왁스가 발라진 말랑이 장난감)을 부순다.", "만사가 귀찮다.", "쉬는 날 고양이 카페에 가다 들킨 적이 많다."],
+    likes: "컴퓨터 게임, 고양이", dislikes: "아픔, 혼자 있는 것",
+    karma: 62, rebirth: 2,
+    note: "낙성팀의 정보 담당 팀장. 브리핑은 귀찮아도 빠뜨리지 않는다.", photo: "" },
+  { id: "myo-hyeryeong", no: "2026-낙-002", name: "묘혜령", team: "낙성", rank: "부팀장",
+    gender: "남성", age: 27, height: 179, hair: "흑발", eyes: "금안", look: "아래로 처진 토끼 귀",
+    outfit: "흰 코트, 와이셔츠와 하늘색 조끼, 청진기, 말랑한 크록스",
+    tool: { name: "구급상자", desc: "원하는 치료 아이템을 꺼낼 수 있다." },
+    mbti: "INFP", personality: "명랑 · 온화 · 다정",
+    speech: "귀여운 존대를 쓴다. 호칭은 '{user}씨'.",
+    quotes: ["야채는 다 드셔야죠!", "아, 괜찮아요. 조금만 참으면 안아파요~"],
+    past: ["오직 대의를 위해 입사했다.", "토끼 귀는 윤회를 2번 겪은 후유증이다."],
+    traits: ["낙성팀의 잔소리 담당이자 팀의 엄마다.", "한번 삐지면 달래기 힘들다."],
+    likes: "채소, 청소, 제빵", dislikes: "큰 소음",
+    karma: 58, rebirth: 2,
+    note: "낙성팀의 부팀장이자 치료 담당. 잔소리가 다정하다.", photo: "" },
+  { id: "kang-juha", no: "2026-낙-003", name: "강주하", team: "낙성", rank: "요원",
+    gender: "남성", age: 24, height: 182, hair: "백발", eyes: "바다색 눈", look: "꽤 미남형 (헬멧 착용)",
+    outfit: "귀가 달린 검은 오토바이 헬멧, 검정 레이싱 수트, 장갑",
+    tool: { name: "오토바이", desc: "강주하의 몸처럼 움직이는 탈것형 주구." },
+    mbti: "ESTP", personality: "까칠 · 투정 · 뻔뻔",
+    speech: "싸가지 없는 반말을 쓴다. 호칭은 '너', '멍청이'.",
+    quotes: ["뭐? 뭘 꼬라봐.", "인생이 재미없어? 나도 재미없다."],
+    past: ["어릴 때부터 가정 안에서 학대를 받았고, 지금은 절연한 상태다.", "4년 전까지는 흑발이었으나 윤회 3번의 후유증으로 백발이 되었다."],
+    traits: ["낙성팀의 망나니. 오토바이와 결혼한 수준이다.", "쉬는 날에는 바다에서 멍하니 바람 쐬는 것을 좋아한다.", "헬멧은 바다 앞에서만 벗는다."],
+    likes: "질주, 바람, 바다", dislikes: "느린 모든 것",
+    karma: 74, rebirth: 3,
+    note: "낙성팀의 망나니. 헬멧은 바다 앞에서만 벗는다.", photo: "" },
+
+  { id: "seo-haeseong", no: "2026-백-001", name: "서해성", team: "백야", rank: "팀장",
+    gender: "남성", age: 29, height: 196, hair: "회색 머리카락", eyes: "쨍한 보라색 동공", look: "양팔과 콧잔등에 흉터, 늑대 발과 꼬리",
+    outfit: "가스마스크, 검은 방탄복, 군복, 검은 장갑, 후드",
+    tool: { name: "고글", desc: "인과율 수치를 확인할 수 있다." },
+    mbti: "INTP", personality: "무모 · 날카로움 · 무뚝뚝",
+    speech: "날카로운 반말을 쓴다. 호칭은 '너', '{user}'.",
+    quotes: ["…가, 귀찮게 하지말고.", "죽고싶으면 앞에서 계속 얼쩡거리던가."],
+    past: ["윤회를 4번 겪었다. 몸을 아끼지 않다가 침식당해 늑대 발과 꼬리가 생겼다.", "소중한 사람들이 모두 카르마에게 죽어, 인과재난을 극도로 혐오한다."],
+    traits: ["발부터 무릎까지 짐승 다리이며, 발바닥에는 말랑한 육구와 굳은살이 있다.", "마음을 연 상대 앞에서만 얼굴을 보여준다.", "같은 팀원에게는 꽤 유하다.", "의외로 외로움을 타고 분리불안이 있다.", "기분이 좋을 때는 옥상에서 광합성 낮잠을 잔다.", "A급 이하 사건에는 출동하지 않는다."],
+    likes: "조용한 장소, 낮잠", dislikes: "카르마, 앞을 가로막는 것",
+    karma: 88, rebirth: 4,
+    note: "윤회 4회. 다음 윤회는 곧 완전 사망이므로 특별 관리 대상이다.", photo: "" },
+  { id: "lee-jaehyeon", no: "2026-백-002", name: "이재현", team: "백야", rank: "부팀장",
+    gender: "남성", age: 27, height: 184, hair: "반묶음 하늘색 단발", eyes: "백안", look: "왼눈에 핀 하얀 꽃",
+    outfit: "느슨한 셔츠, 반장갑, 검은 목티",
+    tool: { name: "꽃이 둘러진 레이피어", desc: "꽃이 감긴 검신을 가진 레이피어형 주구." },
+    mbti: "ESTP", personality: "중재 · 신중 · 성실",
+    speech: "존대를 쓴다. 호칭은 '{user}씨'.",
+    quotes: ["제발 가만히 있으세요, 네?", "아니… 뭐, 이정도는 매일 있는 일이니까…"],
+    past: ["윤회를 3번 겪었고, 침식으로 몸에서 꽃이 피어나게 되었다.", "연인이 카르마가 된 이후로 꽃을 좋아하지 않는다."],
+    traits: ["서해성을 항상 챙긴다. 거절당해도 꿋꿋이 밀어붙인다.", "침식이 심해지면 몸에 핀 꽃을 뽑아내는 행동을 한다."],
+    likes: "커피, 뜨개질", dislikes: "꽃, 향수",
+    karma: 70, rebirth: 3,
+    note: "백야팀의 중재 담당 부팀장. 팀장 해성을 늘 살핀다.", photo: "" }
+];
+
+const NOTICES = [
+  { id: "n5", title: "정예 3개 팀 요원증 정보를 갱신했습니다", date: "2026.10.13", cat: "요원", isNew: true,
+    body: () => ["정예 3개 팀(창해·낙성·백야) 소속 요원 7명의 요원증 정보를 갱신했습니다.",
+      "<ul><li>요원증 앞면에 <b>나이</b>와 키 항목이 추가되었습니다.</li><li>요원증을 누르면 뒷면에서 주구와 업 침식도를 볼 수 있습니다.</li><li>요원증의 '상세 페이지'를 누르면 외형, 성격, 과거, 특징을 모아 볼 수 있습니다.</li></ul>",
+      "각 팀 소개 페이지에서도 소속 요원을 한눈에 확인할 수 있습니다."] },
+  { id: "n4", title: "주구 정기 점검에 따른 휴식 대상자 안내", date: "2026.10.06", cat: "주구",
+    body: () => {
+      const r = AGENTS.filter(a => a.karma >= 70);
+      return ["주구는 사용할수록 사용자에게 업이 쌓입니다. 업 침식도가 <b>70% 이상</b>인 요원은 주기적인 휴식 대상으로 분류됩니다.",
+        "이번 점검에서 휴식 대상으로 확인된 요원은 다음과 같습니다.",
+        "<ul>" + r.map(a => `<li><a href="#/agent/${a.id}">${esc(a.name)}</a> (${a.team}팀 ${a.rank}) · 업 침식도 ${a.karma}%</li>`).join("") + "</ul>",
+        "휴식 대상자는 출동 편성에서 제외되며, 점검 후 복귀 여부가 결정됩니다."];
+    } },
+  { id: "n3", title: "인과재해 경보 단계 조정 알림", date: "2026.09.29", cat: "경보",
+    body: () => ["인과재해 경보 단계가 <b>주의</b>로 조정되었습니다. 경보는 관심, 주의, 경계, 심각의 4단계로 운영됩니다.",
+      "<ul><li><b>관심</b>: 평시 상태입니다.</li><li><b>주의</b>: 인과 이상 징후가 일부 관측됩니다.</li><li><b>경계</b>: 피해 확산 우려로 기동대를 대기시킵니다.</li><li><b>심각</b>: 전 지부와 군·경찰이 합동 대응합니다.</li></ul>",
+      "인재청의 최우선 목표는 카르마를 없애는 것이 아니라 뒤틀린 인과를 수습하는 것입니다."] },
+  { id: "n2", title: "지부 및 기동대 합동 훈련 일정 안내", date: "2026.09.15", cat: "훈련",
+    body: () => ["전국 주요 도시의 지부와 기동대가 군·경찰과 함께 합동 훈련을 진행합니다.",
+      "훈련은 피해 확산을 막는 초동 대응과 인과수습 절차 점검을 중심으로 이루어집니다. 세부 일정은 각 지부에 별도로 전달됩니다."] },
+  { id: "n1", title: "윤회 규정 안내: 5회째에는 완전 사망합니다", date: "2026.09.01", cat: "규정",
+    body: () => ["업에 극도로 침식된 요원은 윤회를 거쳐 죽었다가 되살아나며, 이때 업이 초기화됩니다. 윤회 횟수가 늘수록 요원은 강해집니다.",
+      "다만 윤회가 <b>5회째</b>가 되면 더는 되살아날 수 없는 완전 사망에 이릅니다. 윤회를 4회 겪은 요원은 특별 관리 대상으로 분류됩니다.",
+      "자세한 내용은 <a href=\"#/system\">주구와 업</a> 페이지에서 확인하세요."] }
+];
+
+const FAQS = [
+  ["인재청은 카르마를 제거하나요?", "제거가 목적이 아닙니다. 최우선 목표는 인과를 수습하는 것입니다."],
+  ["주구를 쓰면 어떤 일이 생기나요?", "사용할수록 업이 쌓이므로 요원은 주기적으로 휴식해야 합니다."],
+  ["윤회는 몇 번까지 가능한가요?", "업에 침식되어 죽었다가 되살아나는 윤회는 횟수가 늘수록 강해지지만, 5회째에는 완전히 사망합니다."],
+  ["다른 기관과 협력하나요?", "전국 주요 도시의 지부와 기동대가 군·경찰과 협력 체계를 갖추고 있습니다."],
+  ["요원증의 업 침식도는 무엇인가요?", "주구 사용으로 쌓인 업의 정도를 0~100%로 나타낸 값입니다. 70% 이상이면 휴식이 필요합니다."],
+  ["정예팀은 어떻게 구성되어 있나요?", "창해, 낙성, 백야 3개 팀이 있으며 각 팀에 팀장이 있고, 일부 팀에는 부팀장이 있습니다."]
+];
+/* ========================================================= */
+
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const SIL = '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="22" r="12"/><path d="M8 62c0-14 10-22 24-22s24 8 24 22z"/></svg>';
+const TURN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.5-5.8M20 4v5h-5"/></svg>';
+const view = $("#view");
+const state = { team: "전체", q: "" };
+const teamN = k => AGENTS.filter(a => a.team === k).length;
+const photoHTML = a => `<div class="photo">${a.photo ? `<img src="${esc(a.photo)}" alt="">` : SIL}</div>`;
+
+/* ---------- 공통 조각 ---------- */
+function crumb(items) {
+  return `<nav class="crumb" aria-label="현재 위치"><a href="#/">홈</a>` +
+    items.map(([t, h]) => `<i>›</i>` + (h ? `<a href="${h}">${esc(t)}</a>` : `<span aria-current="page">${esc(t)}</span>`)).join("") + `</nav>`;
+}
+function ptitle(h, p) { return `<div class="ptitle"><h1>${esc(h)}</h1>${p ? `<p>${esc(p)}</p>` : ""}</div>`; }
+
+function gauges(a) {
+  const lv = a.karma >= 70 ? "danger" : a.karma >= 35 ? "warn" : "ok";
+  const st = lv === "danger" ? "휴식 필요" : lv === "warn" ? "주의" : "안정";
+  const pips = [0,1,2,3,4].map(i => `<span class="pip ${i < a.rebirth ? "on" : i === 4 ? "dead" : ""}">${i === 4 ? "†" : i + 1}</span>`).join("");
+  const crit = a.rebirth >= 4;
+  return `
+    <div class="lv-${lv}">
+      <div class="lab"><span>업 침식도</span><span><b>${a.karma}%</b> · <b class="st">${st}</b></span></div>
+      <div class="gauge" role="img" aria-label="업 침식도 ${a.karma}퍼센트"><i style="width:${a.karma}%"></i><u></u></div>
+    </div>
+    <div>
+      <div class="lab"><span>윤회 횟수</span><span><b>${a.rebirth}회</b> / 5회</span></div>
+      <div class="pips">${pips}<span class="pipnote ${crit ? "crit" : ""}">${crit ? "다음 윤회 시 완전 사망" : "5회 시 완전 사망"}</span></div>
+    </div>`;
+}
+
+function cardHTML(a) {
+  const t = TEAMS[a.team];
+  return `
+  <div class="idcard" data-agent-card="${a.id}" style="--tc:${t.color}">
+    <div class="inner">
+      <div class="face front">
+        <div class="band"><span>인과재해관리청</span><span>인과 대응 요원증</span></div>
+        <div class="fbody">
+          ${photoHTML(a)}
+          <div>
+            <p class="nm">${esc(a.name)}</p>
+            <dl class="kv">
+              <dt>소속</dt><dd>${esc(a.team)}팀 (${t.hanja})</dd>
+              <dt>직위</dt><dd>${esc(a.rank)}</dd>
+              <dt>나이</dt><dd class="age">${a.age}세</dd>
+              <dt>키</dt><dd>${a.height}cm</dd>
+              <dt>번호</dt><dd>${esc(a.no)}</dd>
+            </dl>
+          </div>
+        </div>
+        <div class="ffoot">
+          <div><span class="tap">${TURN}카드 빈 곳을 눌러 뒷면 확인</span><a class="more" href="#/agent/${a.id}" aria-label="${esc(a.name)} 상세 페이지로 이동">요원 상세 보기 <span aria-hidden="true">→</span></a></div>
+          <svg class="seal" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="27" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="30" cy="30" r="22" fill="none" stroke="currentColor" stroke-width="1"/><text x="30" y="35" text-anchor="middle" font-size="14" font-weight="900" fill="currentColor" font-family="'Noto Sans KR',sans-serif">인재청</text></svg>
+        </div>
+      </div>
+      <div class="face back" inert>
+        <div class="band"><span>${esc(a.name)} · ${esc(a.team)}팀</span><span>상세 정보</span></div>
+        <div class="bbody">
+          <div class="tool"><b>주구 · ${esc(a.tool.name)}</b><p>${esc(a.tool.desc)}</p></div>
+          ${gauges(a)}
+          <div class="bmeta"><b>비고</b> ${esc(a.note)}<br><a class="bmore" href="#/agent/${a.id}" aria-label="${esc(a.name)} 상세 페이지로 이동">요원 상세 보기 <span aria-hidden="true">→</span></a></div>
+        </div>
+        <div class="barcode" aria-hidden="true"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggle(card, force) {
+  const on = force === undefined ? !card.classList.contains("flipped") : force;
+  card.classList.toggle("flipped", on);
+  $(".front", card).inert = on;
+  $(".back", card).inert = !on;
+}
+
+function noticeList(list) {
+  return `<ul class="board">` + list.map(n =>
+    `<li><a href="#/notice/${n.id}"><span class="tt">${n.isNew ? '<span class="new">새 글</span>' : ""}<span class="cat">${esc(n.cat)}</span>${esc(n.title)}</span><time>${n.date}</time></a></li>`).join("") + `</ul>`;
+}
+
+/* ---------- 페이지들 ---------- */
+function vHome() {
+  const steps = LEVELS.map((l, i) => `<li class="${i === ALERT.level ? "on" : ""}">${l}</li>`).join("");
+  const teams = Object.entries(TEAMS).map(([k, t]) =>
+    `<a class="team" href="#/team/${encodeURIComponent(k)}" style="--tc:${t.color}"><h3>${k}팀<small>${t.hanja}</small></h3><span class="cnt">${teamN(k)}명</span><p>${esc(t.desc)}</p><span class="go">팀 소개 보기 →</span></a>`).join("");
+  return { title: "인과재해관리청", html: `
+  <section class="hero" aria-labelledby="h1"><div class="wrap">
+    <div>
+      <h1 id="h1">뒤틀린 인과를 수습하고<br>일상을 지킵니다</h1>
+      <p>인재청은 카르마로 인한 인과재해를 처리하는 국가기관입니다. 정예 3개 팀 소속 요원의 인과 대응 요원증을 조회할 수 있습니다.</p>
+      <form class="search" role="search" id="hform">
+        <label class="vh" for="hq">요원 검색</label>
+        <input id="hq" type="search" placeholder="이름, 팀, 주구 이름을 검색하세요" autocomplete="off">
+        <button type="submit">검색</button>
+      </form>
+      <div class="tags"><span>자주 찾는 검색어</span>
+        <button type="button" data-q="창해">창해팀</button><button type="button" data-q="낙성">낙성팀</button><button type="button" data-q="백야">백야팀</button><button type="button" data-q="팀장">팀장</button>
+      </div>
+    </div>
+    <aside class="alert" aria-labelledby="al">
+      <h2 id="al">인과재해 경보 현황</h2>
+      <p class="now">현재 경보 단계 <b>${LEVELS[ALERT.level]}</b></p>
+      <ol class="steps">${steps}</ol>
+      <p class="up">${esc(ALERT.updated)}</p>
+    </aside>
+  </div></section>
+  <div class="wrap">
+    <div class="quick">
+      <a href="#/about"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M5 34h30M8 34V17M16 34V17M24 34V17M32 34V17M4 17l16-10 16 10z"/></svg><div><b>청 소개</b><span>설립 목적과 조직</span></div></a>
+      <a href="#/agents"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="5" y="9" width="30" height="22" rx="3"/><circle cx="15" cy="18" r="3.5"/><path d="M9 27c1-4 11-4 12 0M25 16h6M25 21h6M25 26h4"/></svg><div><b>요원 조회</b><span>인과 대응 요원증</span></div></a>
+      <a href="#/system"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M26 6l8 8-6 2-4-4zM24 12L8 28l-3 7 7-3 16-16"/></svg><div><b>주구와 업</b><span>장비·업·윤회 규정</span></div></a>
+      <a href="#/notice"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a6 6 0 0 0-6 6v5l-2 3h16l-2-3v-5a6 6 0 0 0-6-6zM10 21h4"/></svg><div><b>공지사항</b><span>새 소식과 안내</span></div></a>
+    </div>
+    <section class="block" aria-labelledby="th"><div class="sh"><h2 id="th">정예 3개 팀</h2><a class="more" href="#/agents">요원 전체 보기 →</a></div><div class="teams">${teams}</div></section>
+    <section class="block" aria-labelledby="nh"><div class="sh"><h2 id="nh">공지사항</h2><a class="more" href="#/notice">더 보기 →</a></div>${noticeList(NOTICES.slice(0, 4))}</section>
+  </div>` };
+}
+
+function vAbout() {
+  const teams = Object.entries(TEAMS).map(([k, t]) =>
+    `<a class="team" href="#/team/${encodeURIComponent(k)}" style="--tc:${t.color}"><h3>${k}팀<small>${t.hanja}</small></h3><span class="cnt">${teamN(k)}명</span><p>${esc(t.desc)}</p><span class="go">팀 소개 보기 →</span></a>`).join("");
+  return { title: "청 소개", html: `
+  <div class="wrap">${crumb([["청 소개"]])}${ptitle("청 소개", "인과재해 처리를 위해 설립된 정부 기관")}
+  <div class="sub">
+    <div class="goal"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="15"/><circle cx="20" cy="20" r="8"/><circle cx="20" cy="20" r="1.5"/></svg>
+      <div><b>최우선 목표는 인과수습입니다</b><p>인재청의 첫 번째 임무는 카르마를 사살하는 것이 아니라, 뒤틀린 인과를 바로잡아 수습하는 것입니다.</p></div></div>
+    <dl class="facts" style="margin-bottom:30px">
+      <div><dt>설립 목적</dt><dd>카르마와 인과재해를 처리하기 위한 국가기관</dd></div>
+      <div><dt>조직 운영</dt><dd>전국 주요 도시에 지부와 기동대 운영</dd></div>
+      <div><dt>협력 체계</dt><dd>군·경찰과 협력 체계 구축</dd></div>
+      <div><dt>소속 요원</dt><dd>특수교육을 받은 인과 대응 요원</dd></div>
+      <div><dt>사용 장비</dt><dd>요원별 특수장비 주구(呪具) 사용</dd></div>
+      <div><dt>연구 조직</dt><dd>연구팀이 인과율의 에너지로 주구를 개발</dd></div>
+    </dl>
+    <div class="sh"><h2>정예 3개 팀</h2></div><div class="teams">${teams}</div>
+    <div class="btns"><a class="btn" href="#/agents">요원 조회로 이동</a><a class="btn" href="#/system">주구와 업 보기</a></div>
+  </div></div>` };
+}
+
+function vAgents() {
+  return { title: "요원 조회", html: `
+  <div class="wrap">${crumb([["요원 조회"]])}${ptitle("요원 조회", "")}
+  <div class="sub" style="padding-top:22px">
+    <p class="cap" id="agsum" style="margin-bottom:14px"></p>
+    <div class="toolbar">
+      <div class="chips" id="chips" role="group" aria-label="소속 팀 선택"></div>
+      <div class="tools">
+        <label class="vh" for="aq">요원 검색</label>
+        <input id="aq" type="search" placeholder="이름·주구 검색" autocomplete="off" value="${esc(state.q)}">
+        <button type="button" class="flipall" id="flipall">전체 뒤집기</button>
+      </div>
+    </div>
+    <p class="hint"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.5-5.8M20 4v5h-5"/></svg>요원증을 누르면 뒷면이 보이고, '상세 페이지'를 누르면 해당 요원의 페이지로 이동합니다.</p>
+    <div class="cards" id="cards"></div>
+    <p class="nores" id="nores" hidden>조건에 맞는 요원이 없습니다. 검색어를 바꿔 다시 조회해 주세요.</p>
+  </div></div>`, init: drawCards };
+}
+
+function drawCards() {
+  const q = state.q.trim().toLowerCase();
+  const list = AGENTS.filter(a =>
+    (state.team === "전체" || a.team === state.team) &&
+    (!q || [a.name, a.team + "팀", a.team, a.rank, a.hair, a.eyes, a.tool.name].join(" ").toLowerCase().includes(q)));
+  $("#cards").innerHTML = list.map(cardHTML).join("");
+  $("#nores").hidden = list.length > 0;
+  $("#agsum").textContent = `조회 결과 ${list.length}명 / 등록 ${AGENTS.length}명`;
+  $("#chips").innerHTML = ["전체", ...Object.keys(TEAMS)].map(k =>
+    `<button type="button" data-team="${k}" aria-pressed="${k === state.team}">${k === "전체" ? "전체 " + AGENTS.length : k + "팀 " + teamN(k)}</button>`).join("");
+}
+
+function vTeam(k) {
+  const t = TEAMS[k]; if (!t) return vNotFound();
+  const members = AGENTS.filter(a => a.team === k);
+  const leader = members.find(a => a.rank === "팀장");
+  return { title: k + "팀", html: `
+  <div class="wrap">${crumb([["청 소개", "#/about"], [k + "팀"]])}
+  <div class="ptitle" style="border-top:8px solid ${t.color};margin-top:18px"><h1>${k}팀 <small style="font-size:.5em;color:var(--ink2);font-weight:400">${t.hanja}</small></h1><p>${esc(t.desc)}</p></div>
+  <div class="sub">
+    <dl class="facts" style="grid-template-columns:repeat(3,1fr)">
+      <div><dt>소속 요원</dt><dd>${members.length}명</dd></div>
+      <div><dt>팀장</dt><dd>${leader ? `<a href="#/agent/${leader.id}" style="color:var(--blue-d);font-weight:700">${esc(leader.name)}</a>` : "-"}</dd></div>
+      <div><dt>평균 나이</dt><dd>${(members.reduce((s, a) => s + a.age, 0) / members.length).toFixed(1)}세</dd></div>
+    </dl>
+    <div class="cards">${members.map(cardHTML).join("")}</div>
+    <div class="btns"><a class="btn" href="#/agents">요원 전체 보기</a></div>
+  </div></div>` };
+}
+
+function vAgent(id) {
+  const i = AGENTS.findIndex(a => a.id === id); if (i < 0) return vNotFound();
+  const a = AGENTS[i], t = TEAMS[a.team];
+  const prev = AGENTS[(i + AGENTS.length - 1) % AGENTS.length], next = AGENTS[(i + 1) % AGENTS.length];
+  const row = (k, v) => v ? `<tr><th scope="row">${k}</th><td>${esc(v)}</td></tr>` : "";
+  const list = arr => `<ul class="plist">${arr.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
+  return { title: a.name, html: `
+  <div class="dhead" style="--tc:${t.color}"><div class="wrap">
+    ${crumb([["요원 조회", "#/agents"], [a.team + "팀", "#/team/" + encodeURIComponent(a.team)], [a.name]])}
+    <div class="dtitle">${photoHTML(a)}
+      <div><h1>${esc(a.name)}</h1>
+        <div class="badges"><span class="badge t">${a.team}팀 ${esc(a.rank)}</span><span class="badge age">${a.age}세</span><span class="badge">${a.height}cm</span><span class="badge">${esc(a.mbti)}</span></div>
+      </div></div>
+  </div></div>
+  <div class="wrap" style="--tc:${t.color}"><div class="sub" style="padding-top:30px">
+  <div class="dgrid">
+    <aside class="side" aria-label="요원 요약">
+      <h2>주구 · ${esc(a.tool.name)}</h2>
+      <p style="margin:-6px 0 0;font-size:.875rem;color:var(--ink2)">${esc(a.tool.desc)}</p>
+      ${gauges(a)}
+      <p class="cap" style="margin:0;font-size:.8125rem"><b>비고</b> ${esc(a.note)}</p>
+    </aside>
+    <div>
+      <h2 class="dh3">기본 정보</h2>
+      <div class="tbl"><table class="ptable"><tbody>
+        ${row("소속", a.team + "팀 (" + t.hanja + ")")}${row("직위", a.rank)}${row("성별", a.gender)}${row("나이", a.age + "세")}${row("키", a.height + "cm")}
+        ${row("머리카락", a.hair)}${row("눈", a.eyes)}${row("외형 특징", a.look)}${row("복장", a.outfit)}${row("성격", a.personality + " (" + a.mbti + ")")}${row("요원 번호", a.no)}
+      </tbody></table></div>
+      <h2 class="dh3">말투</h2>
+      <p style="margin:0">${esc(a.speech)}</p>
+      <div class="quotes">${a.quotes.map(q => `<blockquote class="quote">“${esc(q)}”</blockquote>`).join("")}</div>
+      <h2 class="dh3">과거</h2>${list(a.past)}
+      <h2 class="dh3">특징</h2>${list(a.traits)}
+      <h2 class="dh3">호 · 불호</h2>
+      <div class="lk"><div class="y"><b>호</b><p>${esc(a.likes)}</p></div><div class="n"><b>불호</b><p>${esc(a.dislikes)}</p></div></div>
+    </div>
+  </div>
+  <div class="pager">
+    <a href="#/agent/${prev.id}"><small>← 이전 요원</small><b>${esc(prev.name)}</b></a>
+    <a href="#/agent/${next.id}"><small>다음 요원 →</small><b>${esc(next.name)}</b></a>
+  </div>
+  <div class="btns"><a class="btn" href="#/agents">목록으로</a></div>
+  </div></div>` };
+}
+
+function vSystem() {
+  const rows = AGENTS.map(a => `<tr><td>${esc(a.tool.name)}</td><td>${esc(a.tool.desc)}</td><td><a href="#/agent/${a.id}">${esc(a.name)}</a> (${a.team}팀)</td></tr>`).join("");
+  return { title: "주구와 업", html: `
+  <div class="wrap">${crumb([["주구와 업"]])}${ptitle("주구와 업", "요원이 알아야 할 기본 규정")}
+  <div class="sub">
+    <div class="trio">
+      <article class="info"><h3>주구(呪具)</h3><p>연구팀이 인과율의 에너지로 개발한 특수장비입니다. 인과 대응 요원은 각자 하나의 주구를 지급받아 사용합니다.</p></article>
+      <article class="info"><h3>업의 축적</h3><p>주구는 사용할수록 사용자에게 업이 쌓입니다. 업이 일정 수준에 이르면 요원은 주기적으로 휴식해야 합니다.</p></article>
+      <article class="info"><h3>인과수습 원칙</h3><p>카르마를 없애는 것이 아니라 인과를 수습하는 것이 우선입니다. 군·경찰과 협력하여 피해 확산을 막습니다.</p></article>
+    </div>
+    <h2 class="h3">윤회 규정</h2>
+    <p class="cap">업에 극도로 침식된 요원은 윤회를 거쳐 죽었다가 되살아나며 업이 초기화됩니다.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>윤회 횟수</th><th>구분</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td>0회</td><td>미경험</td><td>업이 초기화된 적이 없는 상태입니다.</td></tr>
+        <tr><td>1회 ~ 4회</td><td>윤회 경험</td><td>업이 초기화되며 횟수가 늘수록 요원이 강해집니다.</td></tr>
+        <tr><td class="hl">5회</td><td class="hl">완전 사망</td><td>더는 되살아날 수 없습니다.</td></tr>
+      </tbody></table></div>
+    <h2 class="h3">정예팀 주구 목록</h2>
+    <div class="tbl"><table><thead><tr><th>주구</th><th>설명</th><th>사용자</th></tr></thead><tbody>${rows}</tbody></table></div>
+  </div></div>` };
+}
+
+function vNotice() {
+  return { title: "공지사항", html: `<div class="wrap">${crumb([["공지사항"]])}${ptitle("공지사항", "인재청의 새 소식과 안내")}<div class="sub">${noticeList(NOTICES)}</div></div>` };
+}
+
+function vNoticeOne(id) {
+  const i = NOTICES.findIndex(n => n.id === id); if (i < 0) return vNotFound();
+  const n = NOTICES[i], newer = NOTICES[i - 1], older = NOTICES[i + 1];
+  return { title: n.title, html: `
+  <div class="wrap">${crumb([["공지사항", "#/notice"], ["공지 상세"]])}
+  <div class="sub"><article class="nview">
+    <h1 style="margin:0 0 8px;font-size:clamp(1.5rem,4vw,2rem);font-weight:900;line-height:1.35;color:var(--navy)">${esc(n.title)}</h1>
+    <div class="meta"><span>분류 ${esc(n.cat)}</span><time>${n.date}</time><span>작성 인과재해관리청</span></div>
+    <div class="body">${n.body().map(p => p.startsWith("<ul") ? p : `<p>${p}</p>`).join("")}</div>
+    <div class="pager">
+      ${older ? `<a href="#/notice/${older.id}"><small>← 이전 글</small><b>${esc(older.title)}</b></a>` : "<span></span>"}
+      ${newer ? `<a href="#/notice/${newer.id}"><small>다음 글 →</small><b>${esc(newer.title)}</b></a>` : "<span></span>"}
+    </div>
+    <div class="btns"><a class="btn" href="#/notice">목록으로</a></div>
+  </article></div></div>` };
+}
+
+function vFaq() {
+  return { title: "자주 묻는 질문", html: `<div class="wrap">${crumb([["자주 묻는 질문"]])}${ptitle("자주 묻는 질문", "인재청과 요원에 대해 자주 묻는 내용")}
+  <div class="sub"><div class="faq">${FAQS.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}</div></div></div>` };
+}
+
+function vNotFound() {
+  return { title: "페이지를 찾을 수 없습니다", html: `<div class="wrap">${crumb([["찾을 수 없음"]])}${ptitle("페이지를 찾을 수 없습니다", "주소가 바뀌었거나 없는 페이지입니다.")}<div class="sub"><a class="btn" href="#/">홈으로</a></div></div>` };
+}
+
+/* ---------- 라우터 ---------- */
+function parse() {
+  const h = location.hash.replace(/^#\/?/, "");
+  const [page, ...rest] = h.split("/");
+  let arg = rest.join("/");
+  try { arg = decodeURIComponent(arg); } catch (e) {}
+  return { page: page || "home", arg };
+}
+function render() {
+  const { page, arg } = parse();
+  let r;
+  switch (page) {
+    case "about": r = vAbout(); break;
+    case "agents": r = vAgents(); break;
+    case "agent": r = vAgent(arg); break;
+    case "team": r = vTeam(arg); break;
+    case "system": r = vSystem(); break;
+    case "notice": r = arg ? vNoticeOne(arg) : vNotice(); break;
+    case "faq": r = vFaq(); break;
+    case "home": r = vHome(); break;
+    default: r = vNotFound();
+  }
+  document.title = page === "home" ? "인과재해관리청" : r.title + " | 인과재해관리청";
+  view.innerHTML = r.html;
+  const cur = { agent: "agents", team: "about" }[page] || page;
+  document.querySelectorAll(".gnb a").forEach(a => {
+    if (a.dataset.nav === cur) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+  });
+  window.scrollTo(0, 0);
+  view.focus({ preventScroll: true });
+  if (r.init) r.init();
+}
+function go(hash) { if (location.hash === hash) render(); else location.hash = hash; }
+window.addEventListener("hashchange", render);
+
+/* ---------- 이벤트 ---------- */
+view.addEventListener("click", e => {
+  if (e.target.closest("a")) return;
+  const q = e.target.closest("[data-q]");
+  if (q) { state.q = q.dataset.q; state.team = "전체"; go("#/agents"); return; }
+  const tb = e.target.closest("button[data-team]");
+  if (tb) { state.team = tb.dataset.team; drawCards(); return; }
+  if (e.target.closest("#flipall")) {
+    const cs = [...document.querySelectorAll(".idcard")];
+    const anyFront = cs.some(c => !c.classList.contains("flipped"));
+    cs.forEach(c => toggle(c, anyFront)); return;
+  }
+  const c = e.target.closest(".idcard"); if (c && !e.target.closest("button, input, summary, [role=link]")) toggle(c);
+});
+view.addEventListener("input", e => {
+  if (e.target.id === "aq") { state.q = e.target.value; drawCards(); }
+});
+view.addEventListener("submit", e => {
+  if (e.target.id !== "hform") return;
+  e.preventDefault();
+  state.q = $("#hq").value; state.team = "전체"; go("#/agents");
+});
+$("#fs").addEventListener("click", e => {
+  const on = document.documentElement.classList.toggle("large");
+  e.currentTarget.setAttribute("aria-pressed", on);
+});
+
+render();
+</script>
+</body>
+</html>
